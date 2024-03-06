@@ -11,7 +11,7 @@ See the Mulan PSL v2 for more details. */
 //
 // Created by WangYunlai on 2023/06/28.
 //
-
+#include "common/time/date.h"
 #include "sql/parser/value.h"
 #include "common/lang/comparator.h"
 #include "common/lang/string.h"
@@ -63,6 +63,10 @@ void Value::set_data(char *data, int length)
       num_value_.bool_value_ = *(int *)data != 0;
       length_                = length;
     } break;
+    case DATES: {
+      num_value_.int_value_ = *(int *)data;
+      length_                = length;
+    } break;
     default: {
       LOG_WARN("unknown data type: %d", attr_type_);
     } break;
@@ -74,7 +78,12 @@ void Value::set_int(int val)
   num_value_.int_value_ = val;
   length_               = sizeof(val);
 }
-
+void Value::set_date(int val)
+{
+  attr_type_ = DATES;
+  num_value_.int_value_ = val;
+  length_ = sizeof(val);
+}
 void Value::set_float(float val)
 {
   attr_type_              = FLOATS;
@@ -104,6 +113,9 @@ void Value::set_value(const Value &value)
   switch (value.attr_type_) {
     case INTS: {
       set_int(value.get_int());
+    } break;
+    case DATES: {
+      set_date(value.get_int());
     } break;
     case FLOATS: {
       set_float(value.get_float());
@@ -148,6 +160,9 @@ std::string Value::to_string() const
     case CHARS: {
       os << str_value_;
     } break;
+    case DATES:{
+      os << date_to_string(num_value_.int_value_);
+    } break;
     default: {
       LOG_WARN("unsupported attr type: %d", attr_type_);
     } break;
@@ -160,6 +175,9 @@ int Value::compare(const Value &other) const
   if (this->attr_type_ == other.attr_type_) {
     switch (this->attr_type_) {
       case INTS: {
+        return common::compare_int((void *)&this->num_value_.int_value_, (void *)&other.num_value_.int_value_);
+      } break;
+      case DATES: {
         return common::compare_int((void *)&this->num_value_.int_value_, (void *)&other.num_value_.int_value_);
       } break;
       case FLOATS: {
@@ -201,6 +219,9 @@ int Value::get_int() const
       }
     }
     case INTS: {
+      return num_value_.int_value_;
+    }
+    case DATES: {
       return num_value_.int_value_;
     }
     case FLOATS: {

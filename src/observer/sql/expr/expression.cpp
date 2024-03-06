@@ -16,6 +16,8 @@ See the Mulan PSL v2 for more details. */
 #include "sql/expr/tuple.h"
 
 using namespace std;
+std::string month_name[] ={"","January","February","March","April","May","June",
+"July","August","September","October","November","December"};
 
 RC FieldExpr::get_value(const Tuple &tuple, Value &value) const
 {
